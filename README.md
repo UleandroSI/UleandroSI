@@ -1,5 +1,7 @@
 <h1 align="center">Hi 👋, I'm Leandro Barbosa</h1>
-<h3 align="center">How can I help you??? I am an eternal student of technology. Enthusiastic about Python and its frameworks. Lover of social projects.</h3>
+<h3 align="center">How can I help you???</h3>
+<h3 align="center">I am an eternal student of technology. Enthusiastic about Python and its frameworks.</h3>
+<h3 align="center">Lover of social projects.</h3>
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=uleandrosi&label=Profile%20views&color=0e75b6&style=flat" alt="uleandrosi" /> </p>
 
