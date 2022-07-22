@@ -10,12 +10,13 @@ __status__ = "Development"
 # Declarando as variaveis de inicio e fim para não inicializar com algum valor antigo.
 import socket
 import os
+import requests
+from tkinter import *
 os.remove("C:/SysTI/IPlivres.txt")
 IPsLivres = []
 
 # Função para pingar os IPs.
 def check_ping(hostname):
-
     response = os.system("ping -n 1 " + hostname)
     # verifica se respondeu...
     if response == 0:
@@ -25,15 +26,16 @@ def check_ping(hostname):
 
     return pingstatus
 
+# Função para salvar arquivo IPlivres no disco.
 def salva_arquivo(IPsLivres):
     f = open("C:/SysTI/IPlivres.txt", "x")
     for linhas_do_arquivo in IPsLivres:
         with open("C:/SysTI/IPlivres.txt", "a") as arquivo:
             arquivo.write("{}\n".format(linhas_do_arquivo))
-    
 
-
-while True:
+# Função para receber valor de escaneamento.
+def botao_comecar():
+    while True:
         # Recebe o range para scanear
         range = int(input("Digite o range: "))
         # caso usuario digite um range inexistente ele verifica.
@@ -42,11 +44,10 @@ while True:
         else:
             break
 
-# 
-
-# i é o parametro que conta quantos equipamentos terá por range.
-i = 210
-while i < 245:
+def check_nslookup(IPsLivres):
+    # i é o parametro que conta quantos equipamentos terá por range.
+    i = 210
+    while i < 245:
         comeco = "192.168." # IP ja definido com o começo do endereço.
         # junta o range + o i do ultimo quadrante.
         ip = comeco + str(range) + "." + str(i)
@@ -59,27 +60,33 @@ while i < 245:
         except socket.herror:
             print("Endereço: {} não encontrado.".format(ip))
             IPsLivres.append(ip)
-            # Cria ou abre arquivo .txt para salvar IPS livres
-            #with open("C:/SysTI/IPlivres.txt", "w") as arquivo:
-            #    arquivo.write("{}\n".format(ip))
-        i += 1 # incrementa para avançar o ultimo quadrante.
-
-# Imprimir IPs disponíveis
-print("")
-print("IPs disponiveis para uso: ")
-print("")
-for ping in IPsLivres:
-    pingstatus = check_ping(ping)
-    if pingstatus == "Network Active":
-        print(pingstatus, ping)
-        IPsLivres.remove(ping)
-    elif pingstatus == "Network Error":
-        print("IP Disponível.",ping)
-    else:
-        print("Erro no ping.")
-
-salva_arquivo(IPsLivres)
+            
+        i += 1 # incrementa para avançar o ultimo numero.
 
 
-# Melhorias a serem implantadas
-#   Receber valor completo do IP para pingar qualquer numero IP não só 192.168.
+
+def principal():
+    # Imprimir IPs disponíveis
+    print("")
+    print("IPs disponiveis para uso: ")
+    print("")
+    for ping in IPsLivres:
+        pingstatus = check_ping(ping)
+        if pingstatus == "Network Active":
+            print(pingstatus, ping)
+            IPsLivres.remove(ping)
+        elif pingstatus == "Network Error":
+            print("IP Disponível.",ping)
+        else:
+            print("Erro no ping.")
+
+    salva_arquivo(IPsLivres)
+
+janela1 = Tk()
+janela1.title("Busca IPs Livres")
+texto_orientacao1 = Label(janela1, text="Este programa varre o range de IP escolhilho apartir de 10 até 245.").grid(column=1, row=0)
+texto_orientacao2 = Label(janela1, text="Digite o range para o numero de IP. Ex.: 3 = 192.168.3.").grid(column=1, row=1)
+botao1 = Button(janela1, text="ENVIAR").grid(column=2, row=2)
+
+
+janela.mainloop()
