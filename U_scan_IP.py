@@ -13,14 +13,24 @@ import socket
 import os
 import requests
 from tkinter import *
+from datetime import date
+from C_banco_IP import Banco
+
+
 #os.remove("C:/SysTI/IPlivres.txt")
 IPsLivres = []
+# Recolhe data atual para nomear arquivo de saida.txt
+data_atual = date.today()
+data_atual = str(data_atual.strftime("%d/%m/%Y"))
+data_arquivo = data_atual.replace("/", "-")
 
 
 class Application():
 
     def __init__(self, master=None):
         self.fonte_padrao = ("Arial", "10")
+
+        self.msg_ip_disponivel = ''' IP Disponível.'''
         
         self.primeiroConteiner = Frame(master)
         self.primeiroConteiner["pady"] = 10
@@ -49,6 +59,7 @@ class Application():
         self.range["width"] = 30
         self.range["font"] = self.fonte_padrao
         self.range.pack(side=LEFT)
+        self.range.focus()
 
         self.botao1 = Button(self.segundoConteiner)
         self.botao1["text"] = "ENVIAR"
@@ -60,14 +71,18 @@ class Application():
         self.mensagem = Label(self.terceiroConteiner, text="", font="self.fonte_padrao")
         self.mensagem.pack()
 
-        self.mensagem2 = Label(self.quartoConteiner, text="", font="self.fonte_padrao")
+        self.mensagem2 = Label(self.quartoConteiner, font="self.fonte_padrao", text="Msg 2")
         self.mensagem2.pack()
 
-        self.labelframe = LabelFrame(self.quartoConteiner, text="IPs Livres")
-        self.labelframe.pack(fill="both", expand="yes")
+        self.labelframe = LabelFrame(master, text="IPs para uso:")
+        #self.labelframe.pack(fill="both", expand="yes")
+        self.labelframe.pack()
+
 
         self.textbox = Text(self.labelframe)
         self.textbox.pack()
+        self.textbox.config(bg='#A67449')
+        self.textbox.config(state='disabled')
 
 
     def verificaEntrada(self):
@@ -103,6 +118,7 @@ class Application():
                 # socket.gethostbyaddr(ip) usa a funcao para encontrar o nome do equipamento registrado no dominio com o IP informado.
                 self.endereco = socket.gethostbyaddr(ip)
                 self.mensagem2["text"] = "IP {} - Registrado como {}".format(self.endereco[2], self.endereco[0])
+                self.textbox.insert("end", self.endereco[0])
                 print("IP {} - Registrado como {}".format(self.endereco[2], self.endereco[0]))
             # caso não encontre o nome do equipamento trata o erro, e imprime qual o IP que falhou.
             except socket.herror:
@@ -125,15 +141,34 @@ class Application():
         return pingstatus
 
     # Função para salvar arquivo IPlivres no disco.
-    def salva_arquivo(IPsLivres):
+    def salva_arquivo(self):
+        global IPsLivres
         f = open("C:/SysTI/IPlivres.txt", "x")
         for linhas_do_arquivo in IPsLivres:
-            with open("C:/SysTI/IPlivres.txt", "a") as arquivo:
+            with open("C:/SysTI" + "/IPDisponivel_" + data_arquivo + ".txt", "a") as arquivo:
                 arquivo.write("{}\n".format(linhas_do_arquivo))
+
+        banco = Banco()
+        try:
+            c = banco.conexao.cursor()
+            c.execute("insert into ipsLivres (ip, data) values ('" + linhas_do_arquivo + "', '" + data_atual + "' )")
+
+            banco.conexao.commit()
+            for row in c.execute('SELECT * FROM ipsLivres'):
+                print(row)
+                self.textbox.insert("1.0", row)
+            c.close()
+
+            return "Usuário cadastrado com sucesso!"
+
+        except:
+            return "Ocorreu um erro na inserção do usuário"
+        
 
     # Funcão de fluxo do programa
     def funcao_principal(self, entrada):
         global IPsLivres
+        self.textbox.insert(INSERT, "Saindo agora função princ.")
         self.entrada = entrada
         retorno_check_nslookup = self.check_nslookup(self.entrada)
 
@@ -141,22 +176,18 @@ class Application():
         for ping in IPsLivres:
             self.pingstatus = self.check_ping(ping)
             if self.pingstatus == "Network Active":
-                self.textbox.insert(self.pingstatus, ping)
                 print(self.pingstatus, ping)
                 IPsLivres.remove(ping)
             elif self.pingstatus == "Network Error":
-                self.textbox.insert("IP Disponível.", ping)
                 print("IP Disponível.",ping)
             else:
-                self.textbox.insert("Erro no ping.")
                 print("Erro no ping.")
 
-        salva_arquivo(IPsLivres)
+        retorno_salva_arquivo = self.salva_arquivo()
+
 
 root = Tk()
 Application(root)
+root.title("Buscar IP Livre")
+root.geometry('600x500')
 root.mainloop()
-
-
-# Melhorias a implementar
-    # Salvar dados no banco de dados.
