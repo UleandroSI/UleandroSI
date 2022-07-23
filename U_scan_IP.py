@@ -8,6 +8,7 @@ __email__ = "uleandrosp7@gmail.com"
 __status__ = "Development"
 
 # Declarando as variaveis de inicio e fim para não inicializar com algum valor antigo.
+from msilib.schema import ComboBox
 import socket
 import os
 import requests
@@ -17,6 +18,7 @@ IPsLivres = []
 
 
 class Application():
+
     def __init__(self, master=None):
         self.fonte_padrao = ("Arial", "10")
         
@@ -61,89 +63,95 @@ class Application():
         self.mensagem2 = Label(self.quartoConteiner, text="", font="self.fonte_padrao")
         self.mensagem2.pack()
 
-# Funcão de fluxo do programa
-def funcao_principal(self, entrada):
-    self.entrada = entrada
-    retorno_check_nslookup = check_nslookup(entrada)
-    """
-    # Imprimir IPs disponíveis
-    print("")
-    print("IPs disponiveis para uso: ")
-    print("")
-    for ping in IPsLivres:
-        pingstatus = check_ping(ping)
-        if pingstatus == "Network Active":
-            print(pingstatus, ping)
-            IPsLivres.remove(ping)
-        elif pingstatus == "Network Error":
-            print("IP Disponível.",ping)
+        self.labelframe = LabelFrame(self.quartoConteiner, text="IPs Livres")
+        self.labelframe.pack(fill="both", expand="yes")
+
+        self.textbox = Text(self.labelframe)
+        self.textbox.pack()
+
+
+    def verificaEntrada(self):
+        # Recebe o range para scanear
+        self.entrada = self.range.get()
+        if not self.entrada:
+            self.mensagem["text"] = "Digite um número inteiro."
         else:
-            print("Erro no ping.")
+            try:
+                self.entrada = int(self.entrada)
+                # caso usuario digite um range inexistente ele verifica.
+                if self.entrada < 0 or self.entrada > 3:
+                    self.mensagem["text"] = "Range deve estar entre 0 e 3."
+                else:
+                    self.mensagem["text"] = "Procurando IPs."
+                    self.funcao_principal(self.entrada)
+            except ValueError:
+                self.mensagem["text"] = "É aceito apenas numeros inteiros."
 
-    salva_arquivo(IPsLivres) """
 
-def verificaEntrada(self):
-    # Recebe o range para scanear
-    self.entrada = self.range.get()
-    if not self.entrada:
-        self.mensagem["text"] = "Digite um número inteiro."
-    else:
-        try:
-            self.entrada = int(self.entrada)
-            # caso usuario digite um range inexistente ele verifica.
-            if self.entrada < 0 or self.entrada > 3:
-                self.mensagem["text"] = "Range deve estar entre 0 e 3."
+    # Função que vefifica se IP está registrado no DNS com nslookup.
+    def check_nslookup(self, range):
+        global IPsLivres
+        self.range = range
+        # i é o parametro que conta quantos equipamentos terá por range.
+        i = 10
+        while i < 15:
+            self.comeco = "192.168." # IP ja definido com o começo do endereço.
+            # junta o range + o i do ultimo quadrante.
+            ip = self.comeco + str(self.range) + "." + str(i)
+
+            try:
+                # socket.gethostbyaddr(ip) usa a funcao para encontrar o nome do equipamento registrado no dominio com o IP informado.
+                self.endereco = socket.gethostbyaddr(ip)
+                self.mensagem2["text"] = "IP {} - Registrado como {}".format(self.endereco[2], self.endereco[0])
+                print("IP {} - Registrado como {}".format(self.endereco[2], self.endereco[0]))
+            # caso não encontre o nome do equipamento trata o erro, e imprime qual o IP que falhou.
+            except socket.herror:
+                self.mensagem2["text"] = "Endereço: {} não encontrado.".format(ip)
+                print("Endereço: {} não encontrado.".format(ip))
+                IPsLivres.append(ip)
+                
+            i += 1 # incrementa para avançar o ultimo numero.
+
+
+    # Função para pingar os IPs.
+    def check_ping(self, hostname):
+        response = os.system("ping -n 1 " + hostname)
+        # verifica se respondeu...
+        if response == 0:
+            pingstatus = "Network Error"
+        else:
+            pingstatus = "Network Active"
+
+        return pingstatus
+
+    # Função para salvar arquivo IPlivres no disco.
+    def salva_arquivo(IPsLivres):
+        f = open("C:/SysTI/IPlivres.txt", "x")
+        for linhas_do_arquivo in IPsLivres:
+            with open("C:/SysTI/IPlivres.txt", "a") as arquivo:
+                arquivo.write("{}\n".format(linhas_do_arquivo))
+
+    # Funcão de fluxo do programa
+    def funcao_principal(self, entrada):
+        global IPsLivres
+        self.entrada = entrada
+        retorno_check_nslookup = self.check_nslookup(self.entrada)
+
+        # Imprimir IPs disponíveis
+        for ping in IPsLivres:
+            self.pingstatus = self.check_ping(ping)
+            if self.pingstatus == "Network Active":
+                self.textbox.insert(self.pingstatus, ping)
+                print(self.pingstatus, ping)
+                IPsLivres.remove(ping)
+            elif self.pingstatus == "Network Error":
+                self.textbox.insert("IP Disponível.", ping)
+                print("IP Disponível.",ping)
             else:
-                self.mensagem["text"] = "Procurando IPs."
-                funcao_principal(self.entrada)
-        except ValueError:
-            self.mensagem["text"] = "É aceito apenas numeros inteiros."
+                self.textbox.insert("Erro no ping.")
+                print("Erro no ping.")
 
-# Função que vefifica se IP está registrado no DNS com nslookup.
-def check_nslookup(self, range):
-    global IPsLivres
-    self.range = range
-    # i é o parametro que conta quantos equipamentos terá por range.
-    i = 210
-    while i < 245:
-        self.comeco = "192.168." # IP ja definido com o começo do endereço.
-        # junta o range + o i do ultimo quadrante.
-        ip = self.comeco + str(self.range) + "." + str(i)
-
-        try:
-            # socket.gethostbyaddr(ip) usa a funcao para encontrar o nome do equipamento registrado no dominio com o IP informado.
-            self.endereco = socket.gethostbyaddr(ip)
-            self.mensagem["text"] = "IP {} - Registrado como {}".format(self.endereco[2], self.endereco[0])
-            #print("IP {} - Registrado como {}".format(self.endereco[2], self.endereco[0]))
-        # caso não encontre o nome do equipamento trata o erro, e imprime qual o IP que falhou.
-        except socket.herror:
-            self.mensagem["text"] = "Endereço: {} não encontrado.".format(ip)
-            #print("Endereço: {} não encontrado.".format(ip))
-            IPsLivres.append(ip)
-            
-        i += 1 # incrementa para avançar o ultimo numero.
-
-#        return self.IPsLivres
-
-# Função para pingar os IPs.
-def check_ping(hostname):
-    response = os.system("ping -n 1 " + hostname)
-    # verifica se respondeu...
-    if response == 0:
-        pingstatus = "Network Error"
-    else:
-        pingstatus = "Network Active"
-
-    return pingstatus
-
-# Função para salvar arquivo IPlivres no disco.
-def salva_arquivo(IPsLivres):
-    f = open("C:/SysTI/IPlivres.txt", "x")
-    for linhas_do_arquivo in IPsLivres:
-        with open("C:/SysTI/IPlivres.txt", "a") as arquivo:
-            arquivo.write("{}\n".format(linhas_do_arquivo))
-
-
+        salva_arquivo(IPsLivres)
 
 root = Tk()
 Application(root)
