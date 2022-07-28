@@ -8,11 +8,9 @@ __email__ = "uleandrosp7@gmail.com"
 __status__ = "Development"
 
 # Declarando as variaveis de inicio e fim para não inicializar com algum valor antigo.
-from msilib.schema import ComboBox
+import PySimpleGUI as sg
 import socket
 import os
-import requests
-from tkinter import *
 from datetime import date
 from C_banco_IP import Banco
 
@@ -27,67 +25,28 @@ data_arquivo = data_atual.replace("/", "-")
 
 class Application():
 
-    def __init__(self, master=None):
-        self.fonte_padrao = ("Arial", "10")
+    def __init__(self):
+        # Layout
+        sg.theme('DarkAmber')   # Add a little color to your windows
+        # All the stuff inside your window. This is the PSG magic code compactor...
+        layout = [ [sg.Text('Este programa varre o range de IP escolhilho apartir de 10 até 245.')],
+                [sg.Text('Digite o range para o numero de IP. Ex.: 3 = 192.168.3.'), sg.InputText(size=(2,1), key='range')],
+                [sg.Button('OK'), sg.Button('Cancel')]
+                
+                ]
 
-        self.msg_ip_disponivel = ''' IP Disponível.'''
+        # Create the Window
+        self.window = sg.Window('Busca IPs Livres', layout)
         
-        self.primeiroConteiner = Frame(master)
-        self.primeiroConteiner["pady"] = 10
-        self.primeiroConteiner.pack()
-
-        self.segundoConteiner = Frame(master)
-        self.segundoConteiner["padx"] = 20
-        self.segundoConteiner.pack()
-
-        self.terceiroConteiner = Frame(master)
-        self.terceiroConteiner["padx"] = 20
-        self.terceiroConteiner.pack()
-
-        self.quartoConteiner = Frame(master)
-        self.quartoConteiner["pady"] = 20
-        self.quartoConteiner.pack()
-
-        master.title("Busca IPs Livres")
-        self.texto_orientacao1 = Label(self.primeiroConteiner, text="Este programa varre o range de IP escolhilho apartir de 10 até 245.")
-        self.texto_orientacao1["font"] = ("Arial", "10", "bold")
-        self.texto_orientacao1.pack()
-
-        self.texto_orientacao2 = Label(self.segundoConteiner, text="Digite o range para o numero de IP. Ex.: 3 = 192.168.3.")
-        self.texto_orientacao2.pack(side= LEFT)
-        self.range = Entry(self.segundoConteiner)
-        self.range["width"] = 30
-        self.range["font"] = self.fonte_padrao
-        self.range.pack(side=LEFT)
-        self.range.focus()
-
-        self.botao1 = Button(self.segundoConteiner)
-        self.botao1["text"] = "ENVIAR"
-        self.botao1["font"] = ("Calibri", "8")
-        self.botao1["width"] = "12"
-        self.botao1["command"] = self.verificaEntrada
-        self.botao1.pack()
-
-        self.mensagem = Label(self.terceiroConteiner, text="", font="self.fonte_padrao")
-        self.mensagem.pack()
-
-        self.mensagem2 = Label(self.quartoConteiner, font="self.fonte_padrao", text="Msg 2")
-        self.mensagem2.pack()
-
-        self.labelframe = LabelFrame(master, text="IPs para uso:")
-        #self.labelframe.pack(fill="both", expand="yes")
-        self.labelframe.pack()
-
-
-        self.textbox = Text(self.labelframe)
-        self.textbox.pack()
-        self.textbox.config(bg='#A67449')
-        self.textbox.config(state='disabled')
-
-
+        
     def verificaEntrada(self):
         # Recebe o range para scanear
-        self.entrada = self.range.get()
+        self.button, self.values = self.window.Read()
+            
+        self.entrada = self.values['range']
+        print(f'Entrada: {self.entrada}')
+            
+            
         if not self.entrada:
             self.mensagem["text"] = "Digite um número inteiro."
         else:
@@ -185,9 +144,6 @@ class Application():
 
         retorno_salva_arquivo = self.salva_arquivo()
 
-
-root = Tk()
-Application(root)
-root.title("Buscar IP Livre")
-root.geometry('600x500')
-root.mainloop()
+tela = Application()
+tela.verificaEntrada()
+self.window.close()
