@@ -75,7 +75,7 @@ while True:
 chama_funcao1 = executa_nslookup(inicio, fim)
 
 # Abre o arquivo para salvar os IPs disponiveis
-with open("C:/SysTI" + "/IPDisponivel_" + data_arquivo + ".txt", "a") as ips_disponiveis:
+with open("C:/SysTI" + "/IPDisponivel_" + data_arquivo + ".txt", "w") as ips_disponiveis:
 
     with open("C:/SysTI/IPlivres.txt", "r") as ips_livres:
         for linha in ips_livres:
