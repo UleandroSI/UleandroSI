@@ -26,7 +26,7 @@ def check_ping(hostname):
 
     return pingstatus
 
-caminho = os.path.join("192.168.0.5", "documentos", "TI", "Colaboradores_TI", "Leandro", "Comandos", "Rede")
+caminho = os.path.join("IP_Server", "caminho", "da", "Pasta", "da", "Rede")
 
 # Abre o arquivo para salvar os IPs disponiveis
 with open("C:/SysTI" + "/IPDisponivel_" + data_arquivo + ".txt", "w") as ips_disponiveis:
